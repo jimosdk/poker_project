@@ -3,6 +3,27 @@ require 'card'
 
 describe Card do
     subject(:card) {Card.new('A',:pike)}
+
+    describe '::values' do
+        it 'returns an array' do
+            expect(Card.values).to be_an(Array)
+        end
+
+        it 'returned array contains all legal values' do
+            expect(Card.values).to match_array(['2','3','4','5','6','7','8','9','10','J','Q','K','A'])
+        end
+    end
+
+    describe '::suits' do
+        it 'returns an array' do
+            expect(Card.suits).to be_an(Array)
+        end
+
+        it 'returned array contains all legal suit symbols' do
+            expect(Card.suits).to match_array([:pike,:heart,:sword,:tile])
+        end
+    end
+
     describe '::initialize' do
         it 'takes two arguments,a value and a suit' do
             expect{Card.new('A',:pike)}.to_not raise_error
