@@ -82,4 +82,13 @@ describe Card do
             expect(card.to_s.uncolorize[1]).to eq(card.suit) 
         end
     end
+
+    describe '#to_n' do
+        it 'returns the numeric value of a card' do
+            ['2','3','4','5','6','7','8','9','10','J','Q','K','A'].each_with_index do |value,idx|
+                allow(card).to receive(:value).and_return(value)
+                expect(card.to_n).to eq(idx + 2)
+            end
+        end
+    end
 end
