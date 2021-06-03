@@ -8,6 +8,7 @@ describe Hand do
     let(:card3){instance_double('Card3',:value => 'Q',:suit => '♠')}
     let(:card4){instance_double('Card4',:value => 'J',:suit => '♠')}
     let(:card5){instance_double('Card5',:value => '10',:suit => '♠')}
+
     describe '::initialize' do
         it 'initializes instance attribute cards to empty array' do
             cards = hand.instance_variable_get(:@cards)
@@ -118,6 +119,136 @@ describe Hand do
             it 'raises error' do
                 3.times {hand.discard(1)}
                 expect{hand.discard(1)}.to raise_error('No cards in hand')
+            end
+        end
+    end
+
+    describe '#to_s' do
+        it 'returns an array with visual representation of each card' do
+            expect(hand.to_s).to eq([])
+            hand.instance_variable_set(:@cards,[card,card2,card3])
+            allow(card).to receive(:to_s).and_return('A♠')
+            allow(card2).to receive(:to_s).and_return('K♠')
+            allow(card3).to receive(:to_s).and_return('Q♠')
+            expect(hand.to_s).to eq(['A♠','K♠','Q♠'])
+        end
+    end
+
+    describe '#to_n' do
+        it 'returns an array with numeric representation of each card' do
+            expect(hand.to_n).to eq([])
+            hand.instance_variable_set(:@cards,[card,card2,card3])
+            allow(card).to receive(:to_n).and_return(14)
+            allow(card2).to receive(:to_n).and_return(13)
+            allow(card3).to receive(:to_n).and_return(12)
+            expect(hand.to_n).to eq([14,13,12])
+        end
+    end
+
+    describe '#straight?' do
+        before(:example) do
+                hand.instance_variable_set(:@cards,[card2,card,card3,card5,card4])
+        end
+        context 'when there is a straight pair in hand' do
+            it 'returns true' do
+                allow(card).to receive(:to_n).and_return(14)
+                allow(card2).to receive(:to_n).and_return(13)
+                allow(card3).to receive(:to_n).and_return(12)
+                allow(card4).to receive(:to_n).and_return(11)
+                allow(card5).to receive(:to_n).and_return(10)
+                expect(hand.straight?).to be true
+            end
+        end
+
+        context 'when there is not a straight pair in hand' do
+            it 'returns false' do
+                allow(card).to receive(:to_n).and_return(14)
+                allow(card2).to receive(:to_n).and_return(13)
+                allow(card3).to receive(:to_n).and_return(12)
+                allow(card4).to receive(:to_n).and_return(9)
+                allow(card5).to receive(:to_n).and_return(10)
+                expect(hand.straight?).to be false
+            end
+        end
+
+        it 'can distinguish high As from low As' do
+            allow(card).to receive(:to_n).and_return(14)
+            allow(card2).to receive(:to_n).and_return(2)
+            allow(card3).to receive(:to_n).and_return(3)
+            allow(card4).to receive(:to_n).and_return(4)
+            allow(card5).to receive(:to_n).and_return(5)
+            expect(hand.straight?).to be true
+        end
+    end
+
+    describe '#flush?' do
+        before(:example) do
+            hand.instance_variable_set(:@cards,[card2,card,card3,card5,card4])
+        end
+        context 'when there is a flush pair in hand' do
+            it 'returns true' do
+                allow(card).to receive(:suit).and_return('♠')
+                allow(card2).to receive(:suit).and_return('♠')
+                allow(card3).to receive(:suit).and_return('♠')
+                allow(card4).to receive(:suit).and_return('♠')
+                allow(card5).to receive(:suit).and_return('♠')
+                allow(card).to receive(:to_n).and_return(14)
+                allow(card2).to receive(:to_n).and_return(13)
+                allow(card3).to receive(:to_n).and_return(12)
+                allow(card4).to receive(:to_n).and_return(11)
+                allow(card5).to receive(:to_n).and_return(10)
+                expect(hand.royal_flush?).to be true
+                
+            end
+        end
+
+        context 'when there is not a flush pair in hand' do
+            it 'returns false' do
+                allow(card).to receive(:suit).and_return('♥')
+                allow(card2).to receive(:suit).and_return('♠')
+                allow(card3).to receive(:suit).and_return('♠')
+                allow(card4).to receive(:suit).and_return('♠')
+                allow(card5).to receive(:suit).and_return('♠')
+                allow(card).to receive(:to_n).and_return(14)
+                allow(card2).to receive(:to_n).and_return(13)
+                allow(card3).to receive(:to_n).and_return(12)
+                allow(card4).to receive(:to_n).and_return(11)
+                allow(card5).to receive(:to_n).and_return(10)
+                expect(hand.royal_flush?).to be false
+                allow(card).to receive(:suit).and_return('♠')
+                allow(card).to receive(:to_n).and_return(9)
+                expect(hand.royal_flush?).to be false
+                allow(card).to receive(:suit).and_return('♠')
+                allow(card).to receive(:to_n).and_return(8)
+                expect(hand.royal_flush?).to be false
+            end
+        end
+    end
+
+    describe '#royal_flush' do
+        before(:example) do
+            hand.instance_variable_set(:@cards,[card2,card,card3,card5,card4])
+        end
+        context 'when there is a flush pair in hand' do
+            it 'returns true' do
+                allow(card).to receive(:suit).and_return('♠')
+                allow(card2).to receive(:suit).and_return('♠')
+                allow(card3).to receive(:suit).and_return('♠')
+                allow(card4).to receive(:suit).and_return('♠')
+                allow(card5).to receive(:suit).and_return('♠')
+                expect(hand.flush?).to be true
+                
+            end
+        end
+
+        context 'when there is not a flush pair in hand' do
+            it 'returns false' do
+                allow(card).to receive(:suit).and_return('♥')
+                allow(card2).to receive(:suit).and_return('♠')
+                allow(card3).to receive(:suit).and_return('♠')
+                allow(card4).to receive(:suit).and_return('♠')
+                allow(card5).to receive(:suit).and_return('♠')
+                expect(hand.flush?).to be false
             end
         end
     end

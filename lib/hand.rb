@@ -19,6 +19,7 @@ class Hand
         raise 'Argument is not a card' unless card.is_a?(Card)
         raise 'Hand is full' if full?
         @cards << card
+        card
     end
 
     def discard(num)
@@ -28,6 +29,32 @@ class Hand
         @cards.delete_at(num - 1)
     end
 
+    def to_s
+        return [] if empty?
+        @cards.map{|card| card.to_s}
+    end
 
-    
+    def to_n
+        return [] if empty?
+        @cards.map{|card| card.to_n}
+    end
+
+    def straight?
+        hand = to_n
+        if hand.include?(14) && !hand.include?(13)
+            hand.delete(14)
+            hand << 1
+        end
+        hand.sort_by!{|value| value}
+        hand.last - hand.first == 4
+    end
+
+    def flush?
+        @cards.map{|card| card.suit}.uniq.length == 1 
+    end
+
+    def royal_flush?
+        hand = to_n
+        straight? && flush? && hand.include?(13) && hand.include?(14)
+    end
 end
