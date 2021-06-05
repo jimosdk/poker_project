@@ -104,4 +104,15 @@ class Hand
             return [8,*counter.select{|k,v| counter[k] == 4}.to_h.keys]
         end
     end
+
+    def beats?(hand)
+        my_hand = calculate
+        other_hand = hand.calculate
+        paired_results = my_hand.zip(other_hand)
+        paired_results.each do |my_value,other_value|
+            return :win if my_value > other_value
+            return :loss if other_value > my_value
+        end
+        return :tie
+    end
 end

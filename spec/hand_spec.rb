@@ -302,4 +302,40 @@ describe Hand do
             expect(hand.calculate).to eq([1,13,12,11,10,3])
         end
     end
+
+    describe '#beats?' do 
+        let(:hand2) {instance_double('Hand')}
+        context 'compares this hand with another player\'s hand' do
+            context 'when this hand wins' do
+                it 'returns :win' do
+                    allow(hand).to receive(:calculate).and_return([10])
+                    allow(hand2).to receive(:calculate).and_return([9,5])
+                    expect(hand.beats?(hand2)).to eq(:win)
+                    allow(hand).to receive(:calculate).and_return([9,6])
+                    expect(hand.beats?(hand2)).to eq(:win)
+                    allow(hand2).to receive(:calculate).and_return([1,13,12,11,9,8])
+                    allow(hand).to receive(:calculate).and_return([1,13,12,11,10,3])
+                    expect(hand.beats?(hand2)).to eq(:win)
+                end
+            end
+
+            context 'when this hand loses' do
+                it 'returns :loss' do
+                    allow(hand2).to receive(:calculate).and_return([3,13,9,10])
+                    allow(hand).to receive(:calculate).and_return([3,12,9,10])
+                    expect(hand.beats?(hand2)).to eq(:loss)
+                    allow(hand2).to receive(:calculate).and_return([4,13,9,10])
+                    expect(hand.beats?(hand2)).to eq(:loss)
+                end
+            end
+
+            context 'when its a draw' do
+                it 'returns :tie' do
+                allow(hand2).to receive(:calculate).and_return([1,13,12,11,9,8])
+                allow(hand).to receive(:calculate).and_return([1,13,12,11,9,8])
+                expect(hand.beats?(hand2)).to eq(:tie)
+                end
+            end
+        end
+    end
 end
