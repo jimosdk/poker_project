@@ -41,7 +41,7 @@ class Player
     def discard_cards
         begin 
             input = gets.chomp
-            input = parse(input)
+            input = parse_discard(input)
         rescue => e
             puts e.message
         retry
@@ -50,7 +50,7 @@ class Player
         input.sort.reverse.map{|card| discard(card)}
     end
 
-    def parse(input)
+    def parse_discard(input)
         input = input.split(",")
         unless input.length.between?(0,3) && input.all?{|ele| ele.to_i.to_s == ele}
         raise 'Invalid input,select up to 3 cards from 1-5 separated by comma\'s' 
@@ -60,5 +60,36 @@ class Player
         raise 'Invalid input,select up to 3 cards from 1-5 separated by comma\'s'
     end
         input
+    end
+
+    def get_input
+        loop do
+            input = gets.chomp
+
+            case input
+            when 'f' 
+                return :f
+            when 'c'  
+                return :c
+            when 'r'
+                begin
+                    puts 'Input bet amount or hit enter to cancel'
+                    input = gets.chomp 
+                    if input != '' && @pot != 0 
+                        bet(input.to_i)
+                        return input.to_i
+                    end
+                rescue => e 
+                    puts e.message
+                retry
+                end  
+            else
+                puts 'Invalid input'
+            end
+        end
+    end
+
+    def beats?(player)
+        @hand.beats?(player.hand)
     end
 end
