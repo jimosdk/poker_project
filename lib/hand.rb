@@ -66,6 +66,7 @@ class Hand
     end
 
     def calculate
+        #returns array [pair_type_value,high_value or kicker,low_value or kicker,other kicker values in order]
         hand = to_n
         counter = count_values
         values = counter.values.sort.reverse
