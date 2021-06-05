@@ -252,4 +252,54 @@ describe Hand do
             end
         end
     end
+
+    describe '#count_values' do
+        it 'returns a hash' do
+            expect(hand.count_values).to be_a(Hash)
+        end
+
+        it 'the hash counts how many times a value appears in hand' do
+            allow(hand).to receive(:to_n).and_return([14,5,12,2,5])
+            expect(hand.count_values).to eq({2=>1,5=>2,14=>1,12=>1})
+        end
+    end
+
+    describe '#calculate' do
+        it 'returns an array' do 
+            allow(hand).to receive(:to_n).and_return([14,13,2,7,9])
+            expect(hand.calculate).to be_an(Array)
+        end
+
+        it 'returned array is indicative of the type of hand' do
+            allow(hand).to receive(:to_n).and_return([14,13,12,11,10])
+            allow(hand).to receive(:royal_flush?).and_return(true)
+            expect(hand.calculate).to eq([10])
+            allow(hand).to receive(:to_n).and_return([14,2,4,5,3])
+            allow(hand).to receive(:royal_flush?).and_return(false)
+            allow(hand).to receive(:flush?).and_return(true)
+            allow(hand).to receive(:straight?).and_return(true)
+            expect(hand.calculate).to eq([9,5])
+            allow(hand).to receive(:to_n).and_return([7,7,7,10,7])
+            expect(hand.calculate).to eq([8,7])
+            allow(hand).to receive(:to_n).and_return([5,3,5,3,3])
+            expect(hand.calculate).to eq([7,3,5])
+            allow(hand).to receive(:to_n).and_return([1,3,9,14,13])
+            allow(hand).to receive(:flush?).and_return(true)
+            allow(hand).to receive(:straight?).and_return(false)
+            expect(hand.calculate).to eq([6,14,13,9,3,1])
+            allow(hand).to receive(:to_n).and_return([14,13,12,11,10])
+            allow(hand).to receive(:flush?).and_return(false)
+            allow(hand).to receive(:straight?).and_return(true)
+            expect(hand.calculate).to eq([5,14])
+            allow(hand).to receive(:to_n).and_return([2,2,2,14,10])
+            expect(hand.calculate).to eq([4,2,14,10])
+            allow(hand).to receive(:to_n).and_return([9,9,12,12,10])
+            expect(hand.calculate).to eq([3,12,9,10])
+            allow(hand).to receive(:to_n).and_return([14,14,12,11,10])
+            expect(hand.calculate).to eq([2,14,12,11,10])
+            allow(hand).to receive(:to_n).and_return([3,13,12,11,10])
+            allow(hand).to receive(:straight?).and_return(false)
+            expect(hand.calculate).to eq([1,13,12,11,10,3])
+        end
+    end
 end

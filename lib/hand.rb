@@ -1,4 +1,5 @@
 require_relative 'deck'
+require 'byebug'
 
 
 class Hand
@@ -56,5 +57,51 @@ class Hand
     def royal_flush?
         hand = to_n
         straight? && flush? && hand.include?(13) && hand.include?(14)
+    end
+
+    def count_values
+        counter = Hash.new(0)
+        to_n.each {|value| counter[value] += 1}
+        counter
+    end
+
+    def calculate
+        hand = to_n
+        counter = count_values
+        values = counter.values.sort.reverse
+        case values
+        when [1,1,1,1,1]                        #high card,straight,flush,straight flush,royal flush
+            return [10] if royal_flush? #royal flush
+            if straight? && flush?
+                if hand.include?(14)
+                    hand.delete(14)
+                    hand << 1
+                end
+                return [9,hand.sort.last] #straight flush
+            end
+            return [6,*hand.sort.reverse] if flush? #flush
+            if straight?
+                if !hand.include?(13) && hand.include?(14)
+                    delete(14)
+                    hand << 1
+                end
+                return [5,hand.sort.last] #straight
+            end
+            return [1,*hand.sort.reverse] #high card
+        when [2,1,1,1] #one pair
+            return [2,*counter.select{|k,v| counter[k] == 2}.to_h.keys,
+                      *counter.select{|k,v| counter[k] == 1}.to_h.keys.sort.reverse]
+        when [2,2,1] #2-pairs
+            return [3,*counter.select{|k,v| counter[k] == 2}.to_h.keys.sort.reverse,
+                      *counter.select{|k,v| counter[k] == 1}.to_h.keys]
+        when [3,1,1]#3 of a kind
+            return [4,*counter.select{|k,v| counter[k] == 3}.to_h.keys,
+                      *counter.select{|k,v| counter[k] == 1}.to_h.keys.sort.reverse]
+        when [3,2] #full house
+            return [7,*counter.select{|k,v| counter[k] == 3}.to_h.keys,
+                      *counter.select{|k,v| counter[k] == 2}.to_h.keys]
+        when [4,1] #four of a kind
+            return [8,*counter.select{|k,v| counter[k] == 4}.to_h.keys]
+        end
     end
 end
