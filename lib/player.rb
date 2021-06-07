@@ -62,8 +62,10 @@ class Player
         input
     end
 
-    def get_input
+    def get_input(uncalled_bet)
         loop do
+            puts "uncalled bet : #{uncalled_bet}"
+            puts "your pot : #@pot"
             input = gets.chomp
 
             case input
@@ -72,17 +74,21 @@ class Player
             when 'c'  
                 return :c
             when 'r'
-                begin
-                    puts 'Input bet amount or hit enter to cancel'
-                    input = gets.chomp 
-                    if input != '' && @pot != 0 
-                        bet(input.to_i)
-                        return input.to_i
-                    end
-                rescue => e 
-                    puts e.message
-                retry
-                end  
+                if @pot > uncalled_bet
+                    begin
+                        puts 'Input bet amount or hit enter to cancel'
+                        bet_amount = gets.chomp 
+                        if input != '' 
+                            bet(bet_amount.to_i + uncalled_bet)
+                            return bet_amount.to_i
+                        end
+                    rescue => e 
+                        puts e.message
+                    retry
+                    end  
+                else
+                    puts 'Not enough chips'
+                end
             else
                 puts 'Invalid input'
             end
