@@ -1,5 +1,6 @@
 require_relative 'deck'
 require_relative 'player'
+require 'byebug'
 
 class Game
     attr_accessor :player_turn_queue,:deck,:players
@@ -14,8 +15,8 @@ class Game
         @player_turn_queue = @players.keys
     end
 
-    def round_winners
-        possible_winners = @player_turn_queue.select {|player| !@folded.include?(player)}
+    def round_winners(player_arr = @player_turn_queue)
+        possible_winners = player_arr.select {|player| !@folded.include?(player)}
         winners = [possible_winners.pop]
         possible_winners.each do |player|  
             if @players[player].beats?(@players[winners.first]) == :win
@@ -77,5 +78,28 @@ class Game
     def discard_prompt(player)
         @players[player].render_hand  
         puts 'select up to 3 cards from 1-5 separated by comma\'s'
+    end
+
+    def split_pot
+        pot_caps = @wagers.values.uniq.sort
+        prev = 0
+        pot_caps.map! do |cap| 
+            cap = cap - prev
+            prev = cap + prev
+            cap
+        end
+        eligible_players = @player_turn_queue.dup
+        pot_caps.each do |cap|
+            winners = round_winners(eligible_players)
+            pot_amount = 0
+            @wagers.each do |player,wager|
+                next if wager == 0
+                pot_amount += cap
+                @wagers[player] -= cap
+            end
+            #debugger
+            winners.each{|winner| @players[winner].earn(pot_amount/winners.length)}
+            @wagers.each{|player,amount| eligible_players.delete(player) if amount == 0}
+        end
     end
 end

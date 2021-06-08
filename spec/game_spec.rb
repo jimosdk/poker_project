@@ -195,4 +195,45 @@ describe Game do
             game.discard_round
         end
     end
+
+    describe '#split_pot' do
+        subject(:game){Game.new(5)}
+        let(:player1){instance_double('Player')}
+        let(:player2){instance_double('Player')}
+        let(:player3){instance_double('Player')}
+        let(:player4){instance_double('Player')}
+        let(:player5){instance_double('Player')}
+        it 'splits the main and side pot amounts between all eligible players' do
+            game.instance_variable_set(:@players,{'Player 1' => player1,
+                                                  'Player 2' => player2,
+                                                  'Player 3' => player3,
+                                                  'Player 4' => player4,
+                                                  'Player 5' => player5})
+            game.instance_variable_set(:@wagers,{'Player 1' => 1000,
+                                                  'Player 2' => 300,
+                                                  'Player 3' => 1400,
+                                                  'Player 4' => 150,
+                                                  'Player 5' => 1100})
+            game.instance_variable_set(:@folded,['Player 1'])
+            allow(player2).to receive(:beats?).with(player5).and_return(:tie)
+            allow(player3).to receive(:beats?).with(player5).and_return(:loss)
+            allow(player4).to receive(:beats?).with(player5).and_return(:loss)
+            allow(player2).to receive(:earn).with(375)
+            allow(player2).to receive(:earn).with(300)
+            allow(player3).to receive(:earn).with(300)
+            allow(player5).to receive(:earn).with(375)
+            allow(player5).to receive(:earn).with(300)
+            allow(player5).to receive(:earn).with(2100)
+            allow(player5).to receive(:earn).with(200)
+            expect(player5).to receive(:earn).with(375)
+            expect(player2).to receive(:earn).with(375)
+            expect(player5).to receive(:earn).with(300)
+            expect(player2).to receive(:earn).with(300)
+            expect(player5).to receive(:earn).with(2100)
+            expect(player5).to receive(:earn).with(200)
+            expect(player3).to receive(:earn).with(300)
+            game.split_pot
+        end
+    end
+    
 end
