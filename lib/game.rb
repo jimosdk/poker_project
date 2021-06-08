@@ -2,6 +2,7 @@ require_relative 'deck'
 require_relative 'player'
 
 class Game
+    attr_accessor :player_turn_queue,:deck,:players
     def initialize(players = 2)
         @deck = Deck.new
         @currently_highest_bet = 0
@@ -44,11 +45,37 @@ class Game
     end
 
     def deal(player)
-        player.receive_card(@deck.draw_card)
+        @players[player].receive_card(@deck.draw_card)
     end
 
     def pot_satisfied(player)
         @active_bet == true && @wagers[player] == @currently_highest_bet ||
         @active_bet == false && player == @player_turn_queue.last
+    end
+
+    def discard_round
+        @player_turn_queue.each do |player|
+            discarded_cards = []
+            begin
+                system('clear')
+                discard_prompt(player)
+                discarded_cards = @players[player].discard_cards
+            rescue => e 
+                puts e.message  
+            retry  
+            end
+            discarded_cards.each do |card|
+                deal(player)
+                @deck.add_card(card)
+            end
+            system('clear')
+            @players[player].render_hand
+            sleep(3)
+        end
+    end
+
+    def discard_prompt(player)
+        @players[player].render_hand  
+        puts 'select up to 3 cards from 1-5 separated by comma\'s'
     end
 end

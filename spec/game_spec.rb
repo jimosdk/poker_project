@@ -137,9 +137,10 @@ describe Game do
         let(:card){instance_double(Card)}
         it 'deals one card to the player passed as argument' do
             deck = game.instance_variable_get(:@deck)
+            game.instance_variable_set(:@players,{'Player 1' => player1})
             allow(deck).to receive(:draw_card).and_return(card)
             allow(player1).to receive(:receive_card).and_return(card)
-            expect(game.deal(player1)).to eq(card)
+            expect(game.deal('Player 1')).to eq(card)
         end
     end
 

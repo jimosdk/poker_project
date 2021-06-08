@@ -57,9 +57,8 @@ class Player
         raise 'Invalid input,select up to 3 cards from 1-5 separated by comma\'s' 
         end
         input.map!(&:to_i)
-        unless input.all?{|ele| ele.between?(1,5)}
-        raise 'Invalid input,select up to 3 cards from 1-5 separated by comma\'s'
-    end
+        raise 'Invalid input,select up to 3 cards from 1-5 separated by comma\'s' unless input.all?{|ele| ele.between?(1,5)}
+        raise 'Can not discard the same card multiple times' unless input.length == input.uniq.length
         input
     end
 
@@ -112,14 +111,26 @@ class Player
     end
 
     def render_hand
-        suit_index = ''
-        puts to_s.join(' ')
-        arr = to_s.map! do |card| 
+        suit_index = nil
+        value_index = nil
+        h = to_s
+        rev_hand = h.map.with_index do |card ,idx| 
+            value_index = nil
+            value_index = card.index('10') if card.include?('10')
             ['♠','♥','♣','♦'].each {|suit| break suit_index = card.index(suit) if card.include?(suit)}
-            chars = card[suit_index - 1 .. suit_index]
-            card.split(chars).join(chars.reverse)
-        end.join(' ')
-        puts arr
-        puts '1  2  3  4  5'
+            chars = card[value_index||(suit_index - 1) .. suit_index]
+            char_array = chars.split('')
+            suit = char_array.pop
+            if value_index.nil?
+                card2 = (card[0..suit_index - 1] + " " + card[suit_index .. -1]).colorize(:background => :white)
+                h[idx] = card2
+                card.split(chars).join(char_array.unshift(suit + " ").join('')).colorize(:background => :white)  
+            else
+                card.split(chars).join(char_array.unshift(suit).join(''))
+            end
+        end
+        puts h.join(' ')
+        puts rev_hand.join(' ')
+        puts ' 1   2   3   4   5'
     end
 end
