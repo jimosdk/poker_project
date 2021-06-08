@@ -63,6 +63,7 @@ class Player
     end
 
     def get_input(uncalled_bet)
+        return :all_in if @pot == 0
         loop do
             puts "uncalled bet : #{uncalled_bet}"
             puts "your pot : #@pot"
@@ -71,8 +72,15 @@ class Player
             case input
             when 'f' 
                 return :f
-            when 'c'  
-                return :c
+            when 'c' 
+                if @pot >= uncalled_bet
+                    bet(uncalled_bet)
+                    return uncalled_bet
+                else
+                    pot_amount = @pot
+                    bet(pot_amount)
+                    return pot_amount
+                end
             when 'r'
                 if @pot > uncalled_bet
                     begin
@@ -80,7 +88,7 @@ class Player
                         bet_amount = gets.chomp 
                         if input != '' 
                             bet(bet_amount.to_i + uncalled_bet)
-                            return bet_amount.to_i
+                            return bet_amount.to_i + uncalled_bet
                         end
                     rescue => e 
                         puts e.message
