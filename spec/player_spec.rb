@@ -138,9 +138,9 @@ describe Player do
         context 'when user chooses to fold ,check or call' do
             it 'returns a symbol corresponding to user input' do
                 allow_any_instance_of(Kernel).to receive(:gets).and_return('f')
-                expect(player.get_input).to eq(:f)
+                expect(player.get_input(30)).to eq(:f)
                 allow_any_instance_of(Kernel).to receive(:gets).and_return('c')
-                expect(player.get_input).to eq(:c)
+                expect(player.get_input(30)).to eq(30)
             end
         end
 

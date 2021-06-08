@@ -1,4 +1,5 @@
 require_relative 'hand'
+require 'colorize'
 
 
 
@@ -64,7 +65,10 @@ class Player
 
     def get_input(uncalled_bet)
         return :all_in if @pot == 0
+        
         loop do
+            system('clear')
+            render_hand
             puts "uncalled bet : #{uncalled_bet}"
             puts "your pot : #@pot"
             input = gets.chomp
@@ -105,5 +109,17 @@ class Player
 
     def beats?(player)
         @hand.beats?(player.hand)
+    end
+
+    def render_hand
+        suit_index = ''
+        puts to_s.join(' ')
+        arr = to_s.map! do |card| 
+            ['♠','♥','♣','♦'].each {|suit| break suit_index = card.index(suit) if card.include?(suit)}
+            chars = card[suit_index - 1 .. suit_index]
+            card.split(chars).join(chars.reverse)
+        end.join(' ')
+        puts arr
+        puts '1  2  3  4  5'
     end
 end
