@@ -163,4 +163,36 @@ describe Game do
             end
         end
     end
+
+    describe '#discard_round' do
+        let(:deck) {instance_double('Deck')}
+        let(:card) {instance_double('Card')}
+        let(:player1){instance_double('Player')}
+        let(:player2){instance_double('Player')}
+        let(:player3){instance_double('Player')}
+        it 'adds discards to deck and refills each players hand to an equal amount' do
+            game.instance_variable_set(:@deck,deck)
+            game.instance_variable_set(:@player_turn_queue,['Player 1','Player 2','Player 3'])
+            game.instance_variable_set(:@players,{'Player 1' => player1,'Player 2' =>player2,'Player 3' => player3})
+            allow(player1).to receive(:discard_cards).and_return([card,card,card])
+            allow(player2).to receive(:discard_cards).and_return([card,card])
+            allow(player3).to receive(:discard_cards).and_return([])
+            allow(deck).to receive(:add_card).with(card)
+            allow(deck).to receive(:draw_card).and_return(card)
+            allow(player1).to receive(:receive_card).with(card)
+            allow(player2).to receive(:receive_card).with(card)
+            allow(player1).to receive(:render_hand)
+            allow(player2).to receive(:render_hand)
+            allow(player3).to receive(:render_hand)
+            expect(player1).to receive(:discard_cards).once
+            expect(player2).to receive(:discard_cards).once
+            expect(player3).to receive(:discard_cards).once
+            expect(deck).to receive(:add_card).with(card).exactly(5).times
+            expect(deck).to receive(:draw_card).and_return(card).exactly(5).times
+            expect(player1).to receive(:receive_card).with(card).exactly(3).times
+            expect(player2).to receive(:receive_card).with(card).exactly(2).times
+            expect(player3).to_not receive(:receive_card)
+            game.discard_round
+        end
+    end
 end
