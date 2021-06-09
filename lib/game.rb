@@ -3,8 +3,7 @@ require_relative 'player'
 require 'byebug'
 
 class Game
-    attr_accessor :player_turn_queue,:deck,:players,:active_bet,:wagers,:currently_highest_bet,:folded
-    def initialize(players = 2,ante = 5)
+    def initialize(players = 2,ante = 5,chips = 100)
         @deck = Deck.new
         @ante = ante
         @currently_highest_bet = 0
@@ -12,7 +11,7 @@ class Game
         @wagers = Hash.new(0)
         @folded = []
         @players = {}
-        players.times {|idx| @players['Player ' + (idx + 1).to_s] = Player.new}
+        players.times {|idx| @players['Player ' + (idx + 1).to_s] = Player.new(chips)}
         @player_turn_queue = @players.keys
     end
 
@@ -57,6 +56,7 @@ class Game
 
     def discard_round
         @player_turn_queue.each do |player|
+            next if @folded.include?(player)
             discarded_cards = []
             begin
                 system('clear')
@@ -174,67 +174,73 @@ class Game
     def play
         until game_over?
             3.times{@deck.shuffle!}
-            @currently_highest_bet = @ante
-            @player_turn_queue.each do |player|
-                begin 
-                    @players[player].bet(@ante)
-                    @wagers[player] += @ante
-                rescue 
-                    @wagers[player] += @players[player].pot 
-                    @players[player].bet(@players[player].pot)
-                end
-            end
-            i = 0
-            until @player_turn_queue.all?{|player| @players[player].hand_full?}
-                deal(@player_turn_queue[i])
-                i = (i+1)% @player_turn_queue.length
-            end
-            i = 0
-            loop do 
-                cur_player = @player_turn_queue[i]
-                if @folded.include?(cur_player)
-                    i = (i+1)% @player_turn_queue.length
-                    break if pot_satisfied(@player_turn_queue[i])
-                    next  
-                end
-                handle_input(cur_player)
-                i = (i+1)% @player_turn_queue.length
-                break if pot_satisfied(@player_turn_queue[i])
-            end
+            initial_bet
+            deal_five_to_all
+            playing_round
 
             @active_bet = false
             discard_round
 
-            i = 0
-            loop do 
-                cur_player = @player_turn_queue[i]
-                if @folded.include?(cur_player)
-                    i = (i+1)% @player_turn_queue.length
-                    break if pot_satisfied(@player_turn_queue[i])
-                    next  
-                end
-                handle_input(cur_player)
-                i = (i+1)% @player_turn_queue.length
-                break if pot_satisfied(@player_turn_queue[i])
-            end
+            playing_round
 
             system('clear')
             render_win_over
             split_pot
-
             initialize_parameters
-            i = 0
-            until @player_turn_queue.all?{|player| @players[player].hand_empty?}
-                player = @player_turn_queue[i]
-                deck.add_card(@players[player].discard(1))
-                i = (i+1)% @player_turn_queue.length
-            end
+            discard_all_cards
             @player_turn_queue.rotate!
             remove_players
         end
         system('clear')
         puts @player_turn_queue.first + ' wins!'
     end
+
+
+    def discard_all_cards
+        i = 0
+        until @player_turn_queue.all?{|player| @players[player].hand_empty?}
+            player = @player_turn_queue[i]
+            @deck.add_card(@players[player].discard(1))
+            i = (i+1)% @player_turn_queue.length
+        end
+    end
+
+    def playing_round
+        i = 0
+        loop do 
+            cur_player = @player_turn_queue[i]
+            if @folded.include?(cur_player)
+                i = (i+1)% @player_turn_queue.length
+                break if pot_satisfied(@player_turn_queue[i])
+                next  
+            end
+            handle_input(cur_player)
+            i = (i+1)% @player_turn_queue.length
+            break if pot_satisfied(@player_turn_queue[i])
+        end
+    end
+
+    def initial_bet
+        @currently_highest_bet = @ante
+        @player_turn_queue.each do |player|
+            begin 
+                @players[player].bet(@ante)
+                @wagers[player] += @ante
+            rescue 
+                @wagers[player] += @players[player].pot 
+                @players[player].bet(@players[player].pot)
+            end
+        end
+    end
+
+    def deal_five_to_all
+        i = 0
+        until @player_turn_queue.all?{|player| @players[player].hand_full?}
+            deal(@player_turn_queue[i])
+            i = (i+1)% @player_turn_queue.length
+        end
+    end
+    
 
 
 
@@ -267,6 +273,13 @@ class Game
         else
             puts " ( +#{earnings} )"
         end
-        puts "Main pot : " + wagers.values.sum.to_s if pot 
+        puts "Main pot : " + @wagers.values.sum.to_s if pot 
     end
+end
+
+
+if __FILE__ == $PROGRAM_NAME
+
+    game = Game.new(4)
+    game.play
 end

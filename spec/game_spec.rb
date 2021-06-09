@@ -148,8 +148,8 @@ describe Game do
 
         context 'when the last player has finished his round and no player raised the pot' do
             it 'returns true' do
-                expect(game.pot_satisfied('Player 2')).to be true
-                expect(game.pot_satisfied('Player 1')).to be false
+                expect(game.pot_satisfied('Player 2')).to be false
+                expect(game.pot_satisfied('Player 1')).to be true
             end
         end
 
