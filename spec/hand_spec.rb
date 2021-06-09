@@ -338,4 +338,38 @@ describe Hand do
             end
         end
     end
+
+    describe '#hand_type' do
+        it 'returns the type of current hand' do
+            allow(hand).to receive(:to_n).and_return([14,13,12,11,10])
+            allow(hand).to receive(:royal_flush?).and_return(true)
+            expect(hand.hand_type).to eq('ROYAL FLUSH!')
+            allow(hand).to receive(:royal_flush?).and_return(false)
+            allow(hand).to receive(:flush?).and_return(true)
+            allow(hand).to receive(:straight?).and_return(true)
+            allow(hand).to receive(:to_n).and_return([13,12,11,10,9])
+            expect(hand.hand_type).to eq('STRAIGHT FLUSH')
+            allow(hand).to receive(:flush?).and_return(false)
+            allow(hand).to receive(:to_n).and_return([13,12,11,10,9])
+            expect(hand.hand_type).to eq('STRAIGHT')
+            allow(hand).to receive(:flush?).and_return(true)
+            allow(hand).to receive(:straight?).and_return(false)
+            allow(hand).to receive(:to_n).and_return([2,5,6,8,10])
+            expect(hand.hand_type).to eq('FLUSH')
+            allow(hand).to receive(:to_n).and_return([2,5,6,8,10])
+            allow(hand).to receive(:flush?).and_return(false)
+            allow(hand).to receive(:straight?).and_return(false)
+            expect(hand.hand_type).to eq('HIGH CARD')
+            allow(hand).to receive(:to_n).and_return([2,2,3,4,5])
+            expect(hand.hand_type).to eq('ONE PAIR')
+            allow(hand).to receive(:to_n).and_return([3,3,2,2,6])
+            expect(hand.hand_type).to eq('TWO PAIRS')
+            allow(hand).to receive(:to_n).and_return([3,3,3,2,5])
+            expect(hand.hand_type).to eq('THREE OF A KIND')
+            allow(hand).to receive(:to_n).and_return([9,9,9,10,10])
+            expect(hand.hand_type).to eq('FULL HOUSE')
+            allow(hand).to receive(:to_n).and_return([8,8,8,8,11])
+            expect(hand.hand_type).to eq('FOUR OF A KIND')
+        end
+    end
 end

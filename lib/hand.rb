@@ -116,4 +116,28 @@ class Hand
         end
         return :tie
     end
+
+    def hand_type
+        hand = to_n
+        counter = count_values
+        values = counter.values.sort.reverse
+        case values
+        when [1,1,1,1,1]                        #high card,straight,flush,straight flush,royal flush
+            return 'ROYAL FLUSH!' if royal_flush? #royal flush
+            return 'STRAIGHT FLUSH' if straight? && flush?
+            return 'FLUSH' if flush? #flush
+            return 'STRAIGHT' if straight?   
+            return 'HIGH CARD'
+        when [2,1,1,1] #one pair
+            return 'ONE PAIR'
+        when [2,2,1] #2-pairs
+            return 'TWO PAIRS'
+        when [3,1,1]#3 of a kind
+            return 'THREE OF A KIND'
+        when [3,2] #full house
+            return 'FULL HOUSE'
+        when [4,1] #four of a kind
+            return 'FOUR OF A KIND'
+        end
+    end
 end
