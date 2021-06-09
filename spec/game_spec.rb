@@ -236,4 +236,125 @@ describe Game do
         end
     end
     
+    describe '#handle_input' do
+        let(:player1){instance_double('Player')}
+        let(:player2){instance_double('Player')}
+        it 'prompts the user for input' do
+            game.instance_variable_set(:@players,{'Player 1'=> player1,'Player 2' => player2})
+            allow(player1).to receive(:get_input).and_return(:f)
+            expect(player1).to receive(:get_input)
+            game.handle_input('Player 1')
+        end
+
+        context 'when the user folds' do
+            it 'puts the player in the folded array' do
+                game.instance_variable_set(:@players,{'Player 1'=> player1,'Player 2' => player2})
+                allow(player1).to receive(:get_input).and_return(:f)
+                game.handle_input('Player 1')
+                folded = game.instance_variable_get(:@folded)
+                expect(folded).to include('Player 1')
+            end
+        end
+
+        context 'when the user calls or checks' do
+            before(:example) do
+                game.instance_variable_set(:@players,{'Player 1'=> player1})
+                game.instance_variable_set(:@active_bet,true)
+                game.instance_variable_set(:@currently_highest_bet,100)
+                game.instance_variable_set(:@wagers,{'Player 1' => 50})
+                allow(player1).to receive(:get_input).and_return(:c)
+                allow(player1).to receive(:pot).and_return(50)
+                allow(player1).to receive(:bet).with(50)
+            end
+            context 'when there is an active bet' do
+                context 'when the player\'s pot has enough chips' do
+                    it 'subtracts the call amount from the player\'s pot' do
+                        expect(player1).to receive(:bet).with(50)
+                        game.handle_input('Player 1')
+                    end
+                    
+                    it 'updates the player\'s wage adding the called amount' do
+                        game.handle_input('Player 1')
+                        wagers = game.instance_variable_get(:@wagers)
+                        expect(wagers['Player 1']).to eq(100)
+                    end
+                end
+
+                context 'when the player\' pot does not have enough chips' do
+                    it 'bets the players whole pot' do
+                        allow(player1).to receive(:pot).and_return(49)
+                        expect(player1).to receive(:bet).with(49)
+                        game.handle_input('Player 1')
+                        wagers = game.instance_variable_get(:@wagers)
+                        expect(wagers['Player 1']).to eq(99)
+                    end
+                end
+            end
+
+            context 'when there is no active bet' do
+                it 'does not do anything ' do
+                    game.instance_variable_set(:@active_bet,false)
+                    expect(player1).to_not receive(:pot)
+                    expect(player1).to_not receive(:bet)
+                    game.handle_input('Player 1')
+                end
+            end
+        end
+
+        context 'when the player raises' do 
+            before(:example) do
+                game.instance_variable_set(:@players,{'Player 1'=> player1})
+                game.instance_variable_set(:@active_bet,false)
+                game.instance_variable_set(:@currently_highest_bet,70)
+                game.instance_variable_set(:@wagers,{'Player 1' => 50})
+                allow(player1).to receive(:get_input).and_return(:r)
+                allow(player1).to receive(:pot).and_return(50)
+                allow_any_instance_of(Kernel).to receive(:gets).and_return('29')
+                allow(player1).to receive(:bet).with(49)
+            end
+
+            context 'if the player\'s pot has more chips than the required amount for calling' do
+                it 'prompts the player for input' do
+                    expect_any_instance_of(Kernel).to receive(:gets)
+                    game.handle_input('Player 1')
+                end
+                context 'when the player inputs a valid amount' do
+                    it 'subtracts the called amount added to the input amount' do
+                        expect(player1).to receive(:bet).with(49)
+                        game.handle_input('Player 1')
+                    end
+
+                    it 'updates the players wage' do
+                        game.handle_input('Player 1')
+                        wagers = game.instance_variable_get(:@wagers)
+                        expect(wagers['Player 1']).to eq(99)
+                    end
+
+                    it 'updates the currently highest bet' do
+                        game.handle_input('Player 1')
+                        bet = game.instance_variable_get(:@currently_highest_bet)
+                        expect(bet).to eq(99)
+                    end
+
+                    it 'toggles the active bet to true' do
+                        game.handle_input('Player 1')
+                        active_bet = game.instance_variable_get(:@active_bet)
+                        expect(active_bet).to be true
+                    end
+                end
+                
+                # context 'when the player inputs the character \'q\'' do
+                #     it 'returns false, without taking any action' do
+
+                #     end
+                # end
+            end
+            
+            # context 'if the player does not have enough chips' do
+            #     it 'returns false ,without taking any action' do
+
+            #     end
+            # end
+        end
+    end
 end

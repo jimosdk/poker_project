@@ -102,4 +102,78 @@ class Game
             @wagers.each{|player,amount| eligible_players.delete(player) if amount == 0}
         end
     end
+
+
+    def handle_input(player)
+        loop do
+            cmd = @players[player].get_input
+            case cmd
+            when :f 
+                @folded << player
+                return true
+            when :c
+                if @active_bet
+                    call_amount = @currently_highest_bet - @wagers[player] 
+                    call_amount = @players[player].pot if @players[player].pot < call_amount
+                    @players[player].bet(call_amount) 
+                    @wagers[player] += call_amount
+                end
+                return true
+            when :r  
+                call_amount = @currently_highest_bet - @wagers[player]
+                if @players[player].pot > call_amount
+                    begin
+                        input = gets.chomp
+                        unless input == 'q'
+                            @players[player].bet(call_amount + input.to_i)
+                            @wagers[player] += call_amount + input.to_i
+                            @currently_highest_bet +=  input.to_i
+                            @active_bet = true
+                            return true
+                        end
+                    rescue => e  
+                        puts e.message  
+                    retry
+                    end
+                end
+                
+            else
+                return true
+            end
+        end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def render_win_over
+        #print eligible winners
+        #print hand types
+        #showcase winner
+    end
+
+    def render_earner
+        #player name
+        #showcase earner hand
+        #handtype
+    end
+
+    def render 
+        #player name
+        #player hand
+        #pot 
+        #player pot
+        #c:call amount
+        #f:fold
+        #r:raise
+    end
 end
