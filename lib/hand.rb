@@ -90,12 +90,15 @@ class Hand
             end
             return [1,*hand.sort.reverse] #high card
         when [2,1,1,1] #one pair
+            return [6,*hand.sort.reverse] if flush? #flush
             return [2,*counter.select{|k,v| counter[k] == 2}.to_h.keys,
                       *counter.select{|k,v| counter[k] == 1}.to_h.keys.sort.reverse]
         when [2,2,1] #2-pairs
+            return [6,*hand.sort.reverse] if flush? #flush
             return [3,*counter.select{|k,v| counter[k] == 2}.to_h.keys.sort.reverse,
                       *counter.select{|k,v| counter[k] == 1}.to_h.keys]
         when [3,1,1]#3 of a kind
+            return [6,*hand.sort.reverse] if flush? #flush
             return [4,*counter.select{|k,v| counter[k] == 3}.to_h.keys,
                       *counter.select{|k,v| counter[k] == 1}.to_h.keys.sort.reverse]
         when [3,2] #full house
@@ -129,10 +132,13 @@ class Hand
             return 'STRAIGHT' if straight?   
             return 'HIGH CARD'
         when [2,1,1,1] #one pair
+            return 'FLUSH' if flush?
             return 'ONE PAIR'
         when [2,2,1] #2-pairs
+            return 'FLUSH' if flush?
             return 'TWO PAIRS'
         when [3,1,1]#3 of a kind
+            return 'FLUSH' if flush?
             return 'THREE OF A KIND'
         when [3,2] #full house
             return 'FULL HOUSE'

@@ -24,8 +24,6 @@ class Player
 
     def earn(amount)
         @pot += amount
-        puts "player pot: #@pot (+#{amount})"
-        @pot
     end
 
     def bet(amount)
