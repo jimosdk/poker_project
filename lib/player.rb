@@ -24,6 +24,8 @@ class Player
 
     def earn(amount)
         @pot += amount
+        puts "player pot: #@pot (+#{amount})"
+        @pot
     end
 
     def bet(amount)
@@ -62,44 +64,17 @@ class Player
         input
     end
 
-    def get_input(uncalled_bet)
+    def get_input
         return :all_in if @pot == 0
-        
         loop do
-            system('clear')
-            render_hand
-            puts "uncalled bet : #{uncalled_bet}"
-            puts "your pot : #@pot"
             input = gets.chomp
-
             case input
             when 'f' 
                 return :f
             when 'c' 
-                if @pot >= uncalled_bet
-                    bet(uncalled_bet)
-                    return uncalled_bet
-                else
-                    pot_amount = @pot
-                    bet(pot_amount)
-                    return pot_amount
-                end
+                return :c
             when 'r'
-                if @pot > uncalled_bet
-                    begin
-                        puts 'Input bet amount or hit enter to cancel'
-                        bet_amount = gets.chomp 
-                        if input != '' 
-                            bet(bet_amount.to_i + uncalled_bet)
-                            return bet_amount.to_i + uncalled_bet
-                        end
-                    rescue => e 
-                        puts e.message
-                    retry
-                    end  
-                else
-                    puts 'Not enough chips'
-                end
+                return :r
             else
                 puts 'Invalid input'
             end
@@ -133,4 +108,72 @@ class Player
         puts rev_hand.join(' ')
         puts ' 1   2   3   4   5'
     end
+
+    def hand_type
+        @hand.hand_type
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # def get_input(uncalled_bet)
+    #     return :all_in if @pot == 0
+        
+    #     loop do
+    #         system('clear')
+    #         render_hand
+    #         puts "uncalled bet : #{uncalled_bet}"
+    #         puts "your pot : #@pot"
+    #         input = gets.chomp
+
+    #         case input
+    #         when 'f' 
+    #             return :f
+    #         when 'c' 
+    #             if @pot >= uncalled_bet
+    #                 bet(uncalled_bet)
+    #                 return uncalled_bet
+    #             else
+    #                 pot_amount = @pot
+    #                 bet(pot_amount)
+    #                 return pot_amount
+    #             end
+    #         when 'r'
+    #             if @pot > uncalled_bet
+    #                 begin
+    #                     puts 'Input bet amount or hit enter to cancel'
+    #                     bet_amount = gets.chomp 
+    #                     if input != '' 
+    #                         bet(bet_amount.to_i + uncalled_bet)
+    #                         return bet_amount.to_i + uncalled_bet
+    #                     end
+    #                 rescue => e 
+    #                     puts e.message
+    #                 retry
+    #                 end  
+    #             else
+    #                 puts 'Not enough chips'
+    #             end
+    #         else
+    #             puts 'Invalid input'
+    #         end
+    #     end
+    # end
 end

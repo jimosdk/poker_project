@@ -135,21 +135,13 @@ describe Player do
     end
 
     describe '#get_input' do
-        context 'when user chooses to fold ,check or call' do
-            it 'returns a symbol corresponding to user input' do
-                allow_any_instance_of(Kernel).to receive(:gets).and_return('f')
-                expect(player.get_input(30)).to eq(:f)
-                allow_any_instance_of(Kernel).to receive(:gets).and_return('c')
-                expect(player.get_input(30)).to eq(30)
-            end
+        it 'returns a symbol corresponding to user input(fold,call,raise)' do
+            allow_any_instance_of(Kernel).to receive(:gets).and_return('f')
+            expect(player.get_input).to eq(:f)
+            allow_any_instance_of(Kernel).to receive(:gets).and_return('c')
+            expect(player.get_input).to eq(:c)
+            allow_any_instance_of(Kernel).to receive(:gets).and_return('r')
+            expect(player.get_input).to eq(:r)
         end
-
-        # context 'when the user chooses to raise or bet' do
-        #     it 'returns the raise or bet amount' do
-        #         allow_any_instance_of(Kernel).to receive(:gets).and_return('r')
-        #         allow_any_instance_of(Kernel).to receive(:gets).and_return('30')
-        #         expect(player.get_input).to eq(30)
-        #     end
-        # end
     end
 end
