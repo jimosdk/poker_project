@@ -204,6 +204,21 @@ describe Game do
         let(:player4){instance_double('Player')}
         let(:player5){instance_double('Player')}
         it 'splits the main and side pot amounts between all eligible players' do
+            allow(player1).to receive(:render_hand)
+            allow(player2).to receive(:render_hand) 
+            allow(player3).to receive(:render_hand)
+            allow(player4).to receive(:render_hand)
+            allow(player5).to receive(:render_hand)
+            allow(player1).to receive(:hand_type).and_return('')
+            allow(player2).to receive(:hand_type).and_return('')
+            allow(player3).to receive(:hand_type).and_return('')
+            allow(player4).to receive(:hand_type).and_return('')
+            allow(player5).to receive(:hand_type).and_return('')
+            allow(player1).to receive(:pot)
+            allow(player2).to receive(:pot)
+            allow(player3).to receive(:pot)
+            allow(player4).to receive(:pot)
+            allow(player5).to receive(:pot)
             game.instance_variable_set(:@players,{'Player 1' => player1,
                                                   'Player 2' => player2,
                                                   'Player 3' => player3,
@@ -239,6 +254,11 @@ describe Game do
     describe '#handle_input' do
         let(:player1){instance_double('Player')}
         let(:player2){instance_double('Player')}
+        before (:example) do
+            allow(player1).to receive(:render_hand) 
+            allow(player1).to receive(:hand_type).and_return('')
+            allow(player1).to receive(:pot).and_return(50)
+        end
         it 'prompts the user for input' do
             game.instance_variable_set(:@players,{'Player 1'=> player1,'Player 2' => player2})
             allow(player1).to receive(:get_input).and_return(:f)
@@ -294,7 +314,6 @@ describe Game do
             context 'when there is no active bet' do
                 it 'does not do anything ' do
                     game.instance_variable_set(:@active_bet,false)
-                    expect(player1).to_not receive(:pot)
                     expect(player1).to_not receive(:bet)
                     game.handle_input('Player 1')
                 end
@@ -342,19 +361,29 @@ describe Game do
                         expect(active_bet).to be true
                     end
                 end
-                
-                # context 'when the player inputs the character \'q\'' do
-                #     it 'returns false, without taking any action' do
-
-                #     end
-                # end
             end
-            
-            # context 'if the player does not have enough chips' do
-            #     it 'returns false ,without taking any action' do
-
-            #     end
-            # end
         end
+    end
+
+    describe '#initialize_parameters' do
+        it 'initializes folded,wagers,active_bet and currently_highest_bet for the next round' do
+            game.instance_variable_set(:@folded,[1,2])
+            game.instance_variable_set(:@active_bet, true)
+            game.instance_variable_set(:@wagers,{'Player' => 1})
+            game.instance_variable_set(:@currently_highest_bet,1)
+            game.initialize_parameters
+            folded = game.instance_variable_get(:@folded)
+            active_bet = game.instance_variable_get(:@active_bet)
+            wagers = game.instance_variable_get(:@wagers)
+            currently_highest_bet = game.instance_variable_get(:@currently_highest_bet)
+            expect(folded).to eq([])
+            expect(active_bet).to eq(false)
+            expect(wagers).to be_empty
+            expect(currently_highest_bet).to eq(0)
+        end
+    end
+
+    describe '#play' do
+
     end
 end

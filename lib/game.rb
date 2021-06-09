@@ -3,9 +3,10 @@ require_relative 'player'
 require 'byebug'
 
 class Game
-    attr_accessor :player_turn_queue,:deck,:players
-    def initialize(players = 2)
+    attr_accessor :player_turn_queue,:deck,:players,:active_bet,:wagers,:currently_highest_bet,:folded
+    def initialize(players = 2,ante = 5)
         @deck = Deck.new
+        @ante = ante
         @currently_highest_bet = 0
         @active_bet = false
         @wagers = Hash.new(0)
@@ -51,7 +52,7 @@ class Game
 
     def pot_satisfied(player)
         @active_bet == true && @wagers[player] == @currently_highest_bet ||
-        @active_bet == false && player == @player_turn_queue.last
+        @active_bet == false && player == @player_turn_queue.first
     end
 
     def discard_round
@@ -76,6 +77,7 @@ class Game
     end
 
     def discard_prompt(player)
+        puts player
         @players[player].render_hand  
         puts 'select up to 3 cards from 1-5 separated by comma\'s'
     end
@@ -97,8 +99,12 @@ class Game
                 pot_amount += cap
                 @wagers[player] -= cap
             end
-            #debugger
-            winners.each{|winner| @players[winner].earn(pot_amount/winners.length)}
+            winners.each do |winner| 
+                system('clear')
+                @players[winner].earn(pot_amount/winners.length)
+                render_player_status(winner,true,true,pot_amount/winners.length)
+                sleep(3)
+            end
             @wagers.each{|player,amount| eligible_players.delete(player) if amount == 0}
         end
     end
@@ -106,6 +112,16 @@ class Game
 
     def handle_input(player)
         loop do
+            call_amount = @currently_highest_bet - @wagers[player]
+            system('clear')
+            render_player_status(player,false,true,nil,true)
+            puts 'f : fold'
+            if call_amount == 0 
+                puts "c : check"
+            else
+                puts "c : call #{call_amount}"
+            end
+            puts "r : raise"
             cmd = @players[player].get_input
             case cmd
             when :f 
@@ -122,6 +138,10 @@ class Game
             when :r  
                 call_amount = @currently_highest_bet - @wagers[player]
                 if @players[player].pot > call_amount
+                    system('clear')
+                    render_player_status(player,false,true,nil,true)
+                    puts 'input raise amount'
+                    puts 'q: cancel raise'
                     begin
                         input = gets.chomp
                         unless input == 'q'
@@ -143,10 +163,78 @@ class Game
         end
     end
 
+    def initialize_parameters
+        @folded = []
+        @active_bet = false
+        @wagers = Hash.new(0)
+        @currently_highest_bet = 0
+    end
 
 
+    def play
+        until game_over?
+            3.times{@deck.shuffle!}
+            @currently_highest_bet = @ante
+            @player_turn_queue.each do |player|
+                begin 
+                    @players[player].bet(@ante)
+                    @wagers[player] += @ante
+                rescue 
+                    @wagers[player] += @players[player].pot 
+                    @players[player].bet(@players[player].pot)
+                end
+            end
+            i = 0
+            until @player_turn_queue.all?{|player| @players[player].hand_full?}
+                deal(@player_turn_queue[i])
+                i = (i+1)% @player_turn_queue.length
+            end
+            i = 0
+            loop do 
+                cur_player = @player_turn_queue[i]
+                if @folded.include?(cur_player)
+                    i = (i+1)% @player_turn_queue.length
+                    break if pot_satisfied(@player_turn_queue[i])
+                    next  
+                end
+                handle_input(cur_player)
+                i = (i+1)% @player_turn_queue.length
+                break if pot_satisfied(@player_turn_queue[i])
+            end
 
+            @active_bet = false
+            discard_round
 
+            i = 0
+            loop do 
+                cur_player = @player_turn_queue[i]
+                if @folded.include?(cur_player)
+                    i = (i+1)% @player_turn_queue.length
+                    break if pot_satisfied(@player_turn_queue[i])
+                    next  
+                end
+                handle_input(cur_player)
+                i = (i+1)% @player_turn_queue.length
+                break if pot_satisfied(@player_turn_queue[i])
+            end
+
+            system('clear')
+            render_win_over
+            split_pot
+
+            initialize_parameters
+            i = 0
+            until @player_turn_queue.all?{|player| @players[player].hand_empty?}
+                player = @player_turn_queue[i]
+                deck.add_card(@players[player].discard(1))
+                i = (i+1)% @player_turn_queue.length
+            end
+            @player_turn_queue.rotate!
+            remove_players
+        end
+        system('clear')
+        puts @player_turn_queue.first + ' wins!'
+    end
 
 
 
@@ -156,24 +244,29 @@ class Game
 
 
     def render_win_over
-        #print eligible winners
-        #print hand types
-        #showcase winner
+        @player_turn_queue.each do |player|
+            next if @folded.include?(player)
+            render_player_status(player,true)
+            sleep(2)
+        end
+        sleep(2)
+        system('clear')
+        puts "      ROUND WINNERS"
+        round_winners.each {|winner| render_player_status(winner,true)}
+        sleep(3.5)
     end
 
-    def render_earner
-        #player name
-        #showcase earner hand
-        #handtype
-    end
-
-    def render 
-        #player name
-        #player hand
-        #pot 
-        #player pot
-        #c:call amount
-        #f:fold
-        #r:raise
+    def render_player_status(player,handtype = false,player_pot = false,earnings = nil,pot = false)
+        puts player
+        p = @players[player]
+        p.render_hand
+        puts "       " + p.hand_type if handtype
+        print player + '\'s pot : ' + "#{p.pot}"  if player_pot
+        if earnings.nil?
+            puts
+        else
+            puts " ( +#{earnings} )"
+        end
+        puts "Main pot : " + wagers.values.sum.to_s if pot 
     end
 end
